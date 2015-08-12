@@ -28,10 +28,9 @@ class OctoberMirror extends Command
     ];
 
     protected $wildcards = [
-        'modules/*/assets',
+        'modules/*/*',
         'plugins/*/*/assets',
         'themes/*/assets',
-        'modules/*/widgets',
     ];
 
     protected $destinationPath;
