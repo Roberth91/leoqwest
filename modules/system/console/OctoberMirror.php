@@ -31,6 +31,9 @@ class OctoberMirror extends Command
         'modules/*/assets',
         'plugins/*/*/assets',
         'themes/*/assets',
+        'modules/cms/widgets',
+        'modules/backend/widgets',
+        'modules/backend/formwidgets'
     ];
 
     protected $destinationPath;
