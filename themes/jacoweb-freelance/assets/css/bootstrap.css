@@ -6369,3 +6369,6 @@ input:focus {
   -webkit-box-shadow: none;
   box-shadow: none;
 }
+.fa-facebook {
+  color: #3A5795;
+}

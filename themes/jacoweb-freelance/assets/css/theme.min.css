@@ -102,6 +102,38 @@ header .intro-text .skills {
     font-weight: 300;
 }
 
+.btn-facebook:hover {
+  background: #fff !important;
+  color: #3A5795 !important;
+}
+
+.btn-twitter:hover {
+  color: #55acee !important;
+}
+
+.btn-soundcloud:hover {
+  color: #FF4800 !important;
+  background: #fff !important;
+}
+
+.btn-youtube:hover {
+  color: #CF1F21 !important;
+  background: #fff !important;
+}
+
+.qwest-footer {
+  background: rgba(138,11,11,0.85) !important;
+}
+
+.contact-qwest {
+  background: #eee !important;
+  border-radius: 4px;
+}
+
+.label-qwest {
+  color: rgba(138,11,11,0.85);
+}
+
 @media(min-width:768px) {
     header .container {
         padding-top: 200px;

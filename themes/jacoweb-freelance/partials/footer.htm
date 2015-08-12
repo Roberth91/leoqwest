@@ -1,10 +1,25 @@
+[embedTimeline]
+widget-id = "624885749201117184"
+tweet-limit = "2"
+aria-polite = "assertive"
+chrome = "nofooter transparent"
+width = "520"
+height = "600"
+theme = "dark"
+border-color = "#FFF"
+dnt = "0"
+lang = "en"
 ==
 <div class="footer-above">
     <div class="container">
         <div class="row">
             <div class="footer-col col-md-4">
+                <h3>Contact me</h3>
+                <a href="mailto:info@leoqwest.com">info@leoqwest.com</a>
+            </div>
+            <div class="footer-col col-md-4">
                 <h3>Latest Tweets</h3>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                <p>{% component 'embedTimeline' %}</p>
             </div>
             <div class="footer-col col-md-4">
                 <h3>Follow me</h3>
@@ -22,25 +37,6 @@
                         <a href="https://www.youtube.com/watch?v=yP1EOLrHhjo" class="btn-social btn-outline"><i class="fa fa-fw fa-youtube"></i></a>
                     </li>
                 </ul>
-            </div>
-            <div class="footer-col col-md-4">
-                <h3>Newsletter Signup</h3>
-                <form name="sentMessage" id="contactForm" validate>
-                <div class="row control-group">
-                    <div class="form-group col-xs-12 floating-label-form-group controls">
-                        <label>Email Address</label>
-                        <input type="email" class="form-control" placeholder="Email Address" id="email" required data-validation-required-message="Please enter your email address.">
-                        <p class="help-block text-danger"></p>
-                    </div>
-                </div>
-                <br>
-                <div id="success"></div>
-                <div class="row">
-                    <div class="form-group col-xs-12">
-                        <button type="submit" class="btn btn-success btn-lg">Send</button>
-                    </div>
-                </div>
-            </form>
             </div>
         </div>
     </div>
