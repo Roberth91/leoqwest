@@ -25,7 +25,6 @@ class OctoberMirror extends Command
     protected $directories = [
         'storage/app/uploads',
         'storage/app/media',
-        'modules/backend/formwidgets',
     ];
 
     protected $wildcards = [
