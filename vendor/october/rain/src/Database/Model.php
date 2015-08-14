@@ -537,7 +537,7 @@ class Model extends EloquentModel
 
             case 'morphTo':
                 $relation = $this->validateRelationArgs($relationName, ['name', 'type', 'id']);
-                $relationObj = $this->$relationType($relation['name'], $relation['type'], $relation['id']);
+                $relationObj = $this->$relationType($relation['name'] ?: $relationName, $relation['type'], $relation['id']);
                 break;
 
             case 'morphOne':
@@ -1088,6 +1088,11 @@ class Model extends EloquentModel
             }
         }
 
+        // Apply pre deferred bindings
+        if ($this->sessionKey !== null) {
+            $this->commitDeferredBefore($this->sessionKey);
+        }
+
         // Save the record
         $result = parent::save($options);
 
@@ -1105,7 +1110,7 @@ class Model extends EloquentModel
             $this->fireModelEvent('saved', false);
         }
 
-        // Apply any deferred bindings
+        // Apply post deferred bindings
         if ($this->sessionKey !== null) {
             $this->commitDeferred($this->sessionKey);
         }
@@ -1181,7 +1186,7 @@ class Model extends EloquentModel
      */
     public function addDateAttribute($attribute)
     {
-        if (in_array($this->dates, $attribute)) return;
+        if (in_array($attribute, $this->dates)) return;
 
         $this->dates[] = $attribute;
     }

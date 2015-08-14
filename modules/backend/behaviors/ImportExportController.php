@@ -2,10 +2,14 @@
 
 use Str;
 use Lang;
+use View;
+use Response;
 use Backend;
 use Backend\Classes\ControllerBehavior;
 use League\Csv\Reader as CsvReader;
+use League\Csv\Writer as CsvWriter;
 use ApplicationException;
+use SplTempFileObject;
 use Exception;
 
 /**
@@ -81,11 +85,6 @@ class ImportExportController extends ControllerBehavior
     {
         parent::__construct($controller);
 
-        $this->addJs('js/october.import.js', 'core');
-        $this->addJs('js/october.export.js', 'core');
-        $this->addCss('css/import.css', 'core');
-        $this->addCss('css/export.css', 'core');
-
         /*
          * Build configuration
          */
@@ -127,6 +126,13 @@ class ImportExportController extends ControllerBehavior
 
     public function import()
     {
+        if ($response = $this->checkPermissionsForType('import')) {
+            return $response;
+        }
+
+        $this->addJs('js/october.import.js', 'core');
+        $this->addCss('css/import.css', 'core');
+
         $this->controller->pageTitle = $this->controller->pageTitle
             ?: Lang::get($this->getConfig('import[title]', 'Import records'));
 
@@ -135,6 +141,15 @@ class ImportExportController extends ControllerBehavior
 
     public function export()
     {
+        if ($response = $this->checkPermissionsForType('export')) {
+            return $response;
+        }
+
+        $this->checkUseListExportMode();
+
+        $this->addJs('js/october.export.js', 'core');
+        $this->addCss('css/export.css', 'core');
+
         $this->controller->pageTitle = $this->controller->pageTitle
             ?: Lang::get($this->getConfig('export[title]', 'Export records'));
 
@@ -260,8 +275,15 @@ class ImportExportController extends ControllerBehavior
         if ($this->importColumns !== null) {
             return $this->importColumns;
         }
+
         $columnConfig = $this->getConfig('import[list]');
-        return $this->importColumns = $this->makeListColumns($columnConfig);
+        $columns = $this->makeListColumns($columnConfig);
+
+        if (empty($columns)) {
+            throw new ApplicationException('Please specify some columns to import.');
+        }
+
+        return $this->importColumns = $columns;
     }
 
     protected function getImportFileColumns()
@@ -427,13 +449,20 @@ class ImportExportController extends ControllerBehavior
         if ($this->exportColumns !== null) {
             return $this->exportColumns;
         }
+
         $columnConfig = $this->getConfig('export[list]');
-        return $this->exportColumns = $this->makeListColumns($columnConfig);
+        $columns = $this->makeListColumns($columnConfig);
+
+        if (empty($columns)) {
+            throw new ApplicationException('Please specify some columns to export.');
+        }
+
+        return $this->exportColumns = $columns;
     }
 
     protected function makeExportFormatFormWidget()
     {
-        if (!$this->getConfig('export')) {
+        if (!$this->getConfig('export') || $this->getConfig('export[useList]')) {
             return null;
         }
 
@@ -484,6 +513,85 @@ class ImportExportController extends ControllerBehavior
     }
 
     //
+    // ListController integration
+    //
+
+    protected function checkUseListExportMode()
+    {
+        if (!$listDefinition = $this->getConfig('export[useList]')) {
+            return false;
+        }
+
+        if (!$this->controller->isClassExtendedWith('Backend.Behaviors.ListController')) {
+            throw new ApplicationException('You must implement the controller behavior ListController with the export "useList" option enabled.');
+        }
+
+        $this->exportFromList($listDefinition);
+    }
+
+    /**
+     * Outputs the list results as a CSV export.
+     * @param string $definition
+     * @param array $options
+     * @return void
+     */
+    public function exportFromList($definition = null, $options = [])
+    {
+        $lists = $this->controller->makeLists();
+
+        $widget = isset($lists[$definition])
+            ? $lists[$definition]
+            : reset($lists);
+
+        /*
+         * Parse options
+         */
+        $defaultOptions = [
+            'fileName' => $this->exportFileName,
+            'delimiter' => ',',
+            'enclosure' => '"'
+        ];
+
+        $options = array_merge($defaultOptions, $options);
+
+        /*
+         * Prepare CSV
+         */
+        $csv = CsvWriter::createFromFileObject(new SplTempFileObject);
+        $csv->setDelimiter($options['delimiter']);
+        $csv->setEnclosure($options['enclosure']);
+
+        /*
+         * Add headers
+         */
+        $headers = [];
+        $columns = $widget->getVisibleColumns();
+        foreach ($columns as $column) {
+            $headers[] = Lang::get($column->label);
+        }
+        $csv->insertOne($headers);
+
+        /*
+         * Add records
+         */
+        $model = $widget->prepareModel();
+        $results = $model->get();
+        foreach ($results as $result) {
+            $record = [];
+            foreach ($columns as $column) {
+                $record[] = $widget->getColumnValue($result, $column);
+            }
+            $csv->insertOne($record);
+        }
+
+        /*
+         * Output
+         */
+        $csv->output($options['fileName']);
+        exit;
+    }
+
+    //
     // Helpers
     //
 
@@ -501,6 +609,21 @@ class ImportExportController extends ControllerBehavior
         }
 
         return $contents;
+    }
+
+    /**
+     * Checks to see if the import/export is controlled by permissions
+     * and if the logged in user has permissions.
+     * @return \View
+     */
+    protected function checkPermissionsForType($type)
+    {
+        if (
+            ($permissions = $this->getConfig($type.'[permissions]')) &&
+            (!$this->controller->user->hasAnyAccess((array) $permissions))
+        ) {
+            return Response::make(View::make('backend::access_denied'), 403);
+        }
     }
 
     protected function makeOptionsFormWidgetForType($type)
@@ -548,7 +671,12 @@ class ImportExportController extends ControllerBehavior
 
         $result = [];
         foreach ($config->columns as $attribute => $column) {
-            $result[$attribute] = array_get($column, 'label', $attribute);
+            if (is_array($column)) {
+                $result[$attribute] = array_get($column, 'label', $attribute);
+            }
+            else {
+                $result[$attribute] = $column ?: $attribute;
+            }
         }
 
         return $result;

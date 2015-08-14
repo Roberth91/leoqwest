@@ -1,4 +1,6 @@
 description = "Default"
+
+[mailSignup]
 ==
 <!DOCTYPE html>
 
@@ -93,9 +95,6 @@ description = "Default"
         </a>
     </div>
 
-    <!-- Portfolio Modals -->
-    {% partial "modals" %}
-
     <!-- Scripts -->
     <script src="{{ [
         'assets/javascript/jquery.js',
@@ -104,7 +103,8 @@ description = "Default"
         'assets/javascript/cbpAnimatedHeader.js',
         'assets/javascript/jqBootstrapValidation.js'
     ]|theme }}"></script>
-
+    
+    {% framework extras %}
     {% scripts %}
 
     <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery-easing/1.3/jquery.easing.min.js"></script>

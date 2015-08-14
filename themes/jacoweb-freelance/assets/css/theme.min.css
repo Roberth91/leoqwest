@@ -103,8 +103,8 @@ header .intro-text .skills {
 }
 
 .btn-facebook:hover {
-  background: #fff !important;
-  color: #3A5795 !important;
+  background: #3A5795 !important;
+  color: #fff !important;
 }
 
 .btn-twitter:hover {
